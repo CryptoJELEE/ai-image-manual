@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 이미지 생성 도구 매뉴얼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .nav-tab {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .nav-tab.active {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .content-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: slideInUp 0.8s ease-out;
+            display: none;
+        }
+
+        .content-card.active {
+            display: block;
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tool-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .gemini-icon { background: linear-gradient(135deg, #4285f4, #34a853); }
+        .stable-icon { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .firefly-icon { background: linear-gradient(135deg, #ff3838, #ff6b35); }
+        .tips-icon { background: linear-gradient(135deg, #ffd93d, #ff6b6b); }
+        .quality-icon { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+
+        .tool-title {
+            font-size: 2.2rem;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h3::before {
+            content: "🔹";
+            margin-right: 0.5rem;
+        }
+
+        .step-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border: 1px solid #667eea;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .feature-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .feature-item h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 0.5rem 0;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .checklist li::before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        .tip-card {
+            background: linear-gradient(135deg, #ffd93d20, #ff6b6b20);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid #ffd93d;
+        }
+
+        .tip-card h4 {
+            color: #e17055;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .tip-card h4::before {
+            content: "💡";
+            margin-right: 0.5rem;
+        }
+
+        .link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tool-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .tool-icon {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+            
+            .content-card {
+                padding: 1rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-circle:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-circle:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .floating-circle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎨 AI 이미지 생성 도구 매뉴얼</h1>
+            <p>회사 이미지 컨테스트를 위한 완벽 가이드</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="gemini">Gemini</button>
+            <button class="nav-tab" data-tab="stable">Stable Diffusion</button>
+            <button class="nav-tab" data-tab="firefly">Adobe Firefly</button>
+            <button class="nav-tab" data-tab="tips">프롬프트 팁</button>
+            <button class="nav-tab" data-tab="quality">품질 가이드</button>
+        </div>
+
+        <!-- Gemini Tab -->
+        <div id="gemini" class="content-card active">
+            <div class="tool-header">
+                <div class="tool-icon gemini-icon">G</div>
+                <div class="tool-title">Gemini (구글)</div>
+            </div>
+
+            <div class="section">
+                <h3>가입 방법</h3>
+                <div class="step-card">
+                    <span class="step-number">1</span>
+                    <strong>Google 계정으로 접속</strong><br>
+                    <a href="https://gemini.google.com" target="_blank" class="link">gemini.google.com</a> 접속 → 기존 구글 계정으로 로그인
+                </div>
+                <div class="step-card">
+                    <span class="step-number">2</span>
+                    <strong>서비스 약관 동의</strong><br>
+                    Gemini 이용약관 및 개인정보 처리방침 동의
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>이미지 생성 방법</h3>
+                <div class="step-card">
+                    <span class="step-number">1</span>
+                    <strong>채팅창에 프롬프트 입력</strong>
+                    <div class="code-block">
+                        예시: "고양이가 우주복을 입고 달 위를 걷는 모습을 그려줘"
+                    </div>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">2</span>
+                    <strong>생성 대기</strong><br>
+                    보통 10-30초 내 생성 완료 (2-4장의 이미지 생성)
+                </div>
+                <div class="step-card">
+                    <span class="step-number">3</span>
+                    <strong>이미지 다운로드</strong><br>
+                    생성된 이미지 클릭 → 우클릭 → "이미지 저장" 선택
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h4>✅ 장점</h4>
+                        <p>한국어 프롬프트 인식 우수, 무료 사용 가능</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>⚠️ 특징</h4>
+                        <p>일일 생성 횟수 제한, 일러스트/만화풍에 특화</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stable Diffusion Tab -->
+        <div id="stable" class="content-card">
+            <div class="tool-header">
+                <div class="tool-icon stable-icon">SD</div>
+                <div class="tool-title">Stable Diffusion</div>
+            </div>
+
+            <div class="section">
+                <h3>접근 방법</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h4>옵션 A: DreamStudio (유료)</h4>
+                        <p><a href="https://beta.dreamstudio.ai" target="_blank" class="link">beta.dreamstudio.ai</a><br>
+                        가입 시 무료 크레딧 25장 제공<br>
+                        추가: $10 = 1,000 크레딧</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>옵션 B: Hugging Face (무료)</h4>
+                        <p><a href="https://huggingface.co" target="_blank" class="link">huggingface.co</a><br>
+                        "Stable Diffusion XL" 검색하여 사용</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>이미지 생성 방법</h3>
+                <div class="step-card">
+                    <span class="step-number">1</span>
+                    <strong>프롬프트 입력</strong>
+                    <div class="code-block">
+                        예시: "A beautiful sunset over mountains, digital art, highly detailed"
+                    </div>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">2</span>
+                    <strong>설정 조정</strong><br>
+                    • Steps: 20-50 (높을수록 고품질)<br>
+                    • Size: 512x512 또는 1024x1024<br>
+                    • CFG Scale: 7-15 (프롬프트 충실도)
+                </div>
+                <div class="step-card">
+                    <span class="step-number">3</span>
+                    <strong>생성 및 다운로드</strong><br>
+                    "Generate" 클릭 → 완료 후 이미지 저장
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h4>✅ 장점</h4>
+                        <p>매우 상세하고 사실적, 다양한 스타일 지원</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📌 권장 용도</h4>
+                        <p>사실적 인물, 풍경, 제품 이미지</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adobe Firefly Tab -->
+        <div id="firefly" class="content-card">
+            <div class="tool-header">
+                <div class="tool-icon firefly-icon">AF</div>
+                <div class="tool-title">Adobe Firefly</div>
+            </div>
+
+            <div class="section">
+                <h3>가입 방법</h3>
+                <div class="step-card">
+                    <span class="step-number">1</span>
+                    <strong>Adobe 계정 생성</strong><br>
+                    <a href="https://firefly.adobe.com" target="_blank" class="link">firefly.adobe.com</a> → "Get started for free"
+                </div>
+                <div class="step-card">
+                    <span class="step-number">2</span>
+                    <strong>플랜 선택</strong><br>
+                    무료: 월 25개 크레딧 | 프리미엄: 월 100개 크레딧 ($4.99/월)
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>이미지 생성 방법</h3>
+                <div class="step-card">
+                    <span class="step-number">1</span>
+                    <strong>"Text to Image" 선택</strong>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">2</span>
+                    <strong>프롬프트 입력</strong>
+                    <div class="code-block">
+                        예시: "Modern office space with plants and natural lighting"
+                    </div>
+                </div>
+                <div class="step-card">
+                    <span class="step-number">3</span>
+                    <strong>스타일 선택</strong><br>
+                    • Photo: 사진 같은 현실적 이미지<br>
+                    • Art: 예술적, 일러스트 스타일<br>
+                    • Graphic: 그래픽 디자인 스타일
+                </div>
+                <div class="step-card">
+                    <span class="step-number">4</span>
+                    <strong>추가 설정</strong><br>
+                    Color & Tone, Lighting, Composition 조정
+                </div>
+                <div class="step-card">
+                    <span class="step-number">5</span>
+                    <strong>생성 및 다운로드</strong><br>
+                    4장 생성됨 → 원하는 이미지 선택 후 "Download"
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h4>✅ 장점</h4>
+                        <p>상업적 사용 안전, 저작권 걱정 없음</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📌 권장 용도</h4>
+                        <p>비즈니스 이미지, 마케팅 소재, 브랜드 이미지</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Tab -->
+        <div id="tips" class="content-card">
+            <div class="tool-header">
+                <div class="tool-icon tips-icon">💡</div>
+                <div class="tool-title">프롬프트 작성 팁</div>
+            </div>
+
+            <div class="section">
+                <h3>기본 구조</h3>
+                <div class="code-block">
+                    [주요 객체] + [설명/형용사] + [배경/환경] + [스타일] + [품질 키워드]
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>효과적인 키워드</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h4>품질 향상</h4>
+                        <p>high quality, detailed, 4K, 8K<br>
+                        professional photography<br>
+                        masterpiece, best quality</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>스타일</h4>
+                        <p>photorealistic, cinematic lighting<br>
+                        digital art, concept art<br>
+                        watercolor, oil painting</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>구성</h4>
+                        <p>soft lighting, dramatic lighting<br>
+                        close-up, wide shot<br>
+                        vibrant colors, pastel colors</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-card">
+                <h4>피해야 할 표현</h4>
+                <p>• 너무 복잡하고 긴 문장<br>
+                • 모순되는 설명 (예: "어두우면서 밝은")<br>
+                • 부정적 표현 (대신 원하는 것을 명확히 기술)</p>
+            </div>
+        </div>
+
+        <!-- Quality Tab -->
+        <div id="quality" class="content-card">
+            <div class="tool-header">
+                <div class="tool-icon quality-icon">⭐</div>
+                <div class="tool-title">품질 향상 가이드</div>
+            </div>
+
+            <div class="section">
+                <h3>해상도 설정</h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h4>웹용</h4>
+                        <p>1024x1024 또는 1024x768</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>인쇄용</h4>
+                        <p>2048x2048 이상</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>소셜미디어</h4>
+                        <p>플랫폼별 권장 사이즈 확인</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>품질 체크리스트</h3>
+                <ul class="checklist">
+                    <li>프롬프트가 명확하고 구체적한가?</li>
+                    <li>원하는 스타일을 명시했는가?</li>
+                    <li>품질 키워드를 포함했는가?</li>
+                    <li>생성된 이미지가 요구사항에 맞는가?</li>
+                </ul>
+            </div>
+
+            <div class="tip-card">
+                <h4>컨테스트 참여 꿀팁</h4>
+                <p>1. <strong>여러 도구 활용</strong>: 각 도구의 장점을 파악하여 용도에 맞게 사용<br>
+                2. <strong>반복 생성</strong>: 첫 번째 결과에 만족하지 말고 여러 번 시도<br>
+                3. <strong>프롬프트 개선</strong>: 결과를 보고 프롬프트를 점진적으로 개선<br>
+                4. <strong>레퍼런스 활용</strong>: 원하는 스타일의 이미지를 참고하여 키워드 추출<br>
+                5. <strong>시간 여유</strong>: 좋은 결과를 위해 충분한 시간을 확보</p>
+            </div>
+
+            <div class="highlight-box" style="text-align: center; background: linear-gradient(135deg, #667eea20, #764ba220);">
+                <h3 style="color: #667eea; margin-bottom: 1rem;">🎨✨ 성공적인 컨테스트 참여를 응원합니다! ✨🎨</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabButtons = document.querySelectorAll('.nav-tab');
+            const contentCards = document.querySelectorAll('.content-card');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and content
+                    tabButtons.forEach(tab => tab.classList.remove('active'));
+                    contentCards.forEach(card => card.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+
+            // Add hover animations to feature items
+            const featureItems = document.querySelectorAll('.feature-item');
+            featureItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Add animation delays to step cards
+            const stepCards = document.querySelectorAll('.step-card');
+            stepCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>
